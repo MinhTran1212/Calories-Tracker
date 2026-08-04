@@ -13,7 +13,18 @@ datasource db {
 }
 
 model User {
-  Id    Int   @id @default(autoincrement())
+  id    Int   @id @default(autoincrement())
   email String @unique
   name  String?
+  tdee  Int
+}
+
+model Food {
+  id        Int   @id @default(autoincrement())
+  name      String?
+  protein   Int
+  carb      Int
+  fat       Int
+  calories  Int
+  grams  Float
 }

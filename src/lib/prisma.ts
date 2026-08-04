@@ -1,4 +1,4 @@
-import { PrismaClient } from "../generated/prisma/client";
+import { PrismaClient } from "../generated/prisma";
 import { PrismaPg } from "@prisma/adapter-pg";
 
 const adapter = new PrismaPg({
@@ -8,5 +8,11 @@ const adapter = new PrismaPg({
 const prisma = new PrismaClient({
   adapter,
 });
+
+// Add this in your lib/prisma.ts
+console.log("-----------------------------------------");
+console.log("Prisma is connecting to DATABASE_URL:");
+console.log(process.env.DATABASE_URL);
+console.log("-----------------------------------------");
 
 export default prisma;

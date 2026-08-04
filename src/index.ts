@@ -1,13 +1,17 @@
 import express from 'express';
 import prisma from "./lib/prisma";
+import userRouter from "./routes/user.routes";
 
 const app = express();
-const port = 3000;
+app.use(express.json());
+
+app.use('/logging', userRouter);
 
 app.get('/', (req, res) => {
   res.send('Hello World!');
 });
 
-app.listen(port, () => {
-  console.log(`Server running at http://localhost:${port}`);
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => {
+  console.log(`Calorie tracker backend running on path http://localhost:${PORT}`);
 });
