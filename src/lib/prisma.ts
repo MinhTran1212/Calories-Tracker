@@ -1,5 +1,7 @@
-import { PrismaClient } from "../generated/prisma";
+import { PrismaClient, Gender } from "../generated/prisma";
 import { PrismaPg } from "@prisma/adapter-pg";
+require('dotenv').config(); // MUST be at the top!
+
 
 const adapter = new PrismaPg({
   connectionString: process.env.DATABASE_URL!,

@@ -17,14 +17,28 @@ model User {
   email String @unique
   name  String?
   tdee  Int
+  weight Float 
+  height Int 
+  gender Gender
+  age   Int
+  logs  Food[]
+  workoutIntensity Float
+  createdAt DateTime @default(now())
 }
 
 model Food {
   id        Int   @id @default(autoincrement())
   name      String?
-  protein   Int
-  carb      Int
-  fat       Int
-  calories  Int
-  grams  Float
+  protein   Float
+  carb      Float
+  fat       Float
+  calories  Float
+  grams     Float
+  userId    Int   @default(0)
+  user      User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+enum Gender {
+  MALE
+  FEMALE
 }
