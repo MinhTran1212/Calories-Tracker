@@ -15,6 +15,7 @@ datasource db {
 model User {
   id    Int   @id @default(autoincrement())
   email String @unique
+  password String
   name  String?
   tdee  Int
   weight Float 
@@ -34,7 +35,7 @@ model Food {
   fat       Float
   calories  Float
   grams     Float
-  userId    Int   @default(0)
+  userId    Int
   user      User @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 

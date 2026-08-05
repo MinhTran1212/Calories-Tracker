@@ -21,11 +21,15 @@
   "homepage": "https://github.com/MinhTran1212/Calories-Tracker#readme",
   "dependencies": {
     "@prisma/adapter-pg": "^7.9.1",
+    "bcrypt": "^6.0.0",
     "express": "^5.2.1",
+    "jsonwebtoken": "^9.0.3",
     "pg": "^8.22.0"
   },
   "devDependencies": {
+    "@types/bcrypt": "^6.0.0",
     "@types/express": "^5.0.6",
+    "@types/jsonwebtoken": "^9.0.10",
     "@types/node": "^26.1.2",
     "nodemon": "^3.1.14",
     "ts-node": "^10.9.2",

@@ -1,15 +1,19 @@
 import prisma from "../lib/prisma";
 import { Gender } from "../generated/prisma";
+import bcrypt from "bcrypt";
 
 export async function createUser(
     name: string,
     email: string, 
+    password: string,
     weight: number,
     height: number,
     gender: Gender,
     age: number, 
     workoutIntensity: number
-){
+){  
+    const saltRounds = 10;
+    const hashedPassword = await bcrypt.hash(password, saltRounds);
     let bmr = 0;
     
     if (gender == Gender.MALE){
@@ -23,6 +27,7 @@ export async function createUser(
         data: {
             name: name,
             email: email,
+            password: hashedPassword,
             tdee: tdee,
             weight: weight,
             height: height,
@@ -31,6 +36,4 @@ export async function createUser(
             workoutIntensity: workoutIntensity
         }
     });
-
-
 }
