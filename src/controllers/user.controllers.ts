@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import { createUser } from '../services/food.services';
+import { createUser } from '../services/user.services';
 import { Gender } from '../generated/prisma';
 
 export const createUserEntry = async(req: Request, res: Response): Promise<void> => {

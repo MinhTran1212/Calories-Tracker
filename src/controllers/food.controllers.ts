@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import {createFood } from '../services/user.services';
+import {createFood } from '../services/food.services';
 
 export const createFoodEntry = async (req: Request, res: Response): Promise<void> => {
     try {
