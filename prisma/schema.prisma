@@ -33,10 +33,12 @@ model Food {
   protein   Float
   carb      Float
   fat       Float
+  fiber     Float
   calories  Float
   grams     Float
   userId    Int
   user      User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
 }
 
 enum Gender {

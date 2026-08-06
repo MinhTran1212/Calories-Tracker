@@ -1,11 +1,13 @@
 import express from 'express';
 import prisma from "./lib/prisma";
 import userRouter from "./routes/user.routes";
+import foodRouter from "./routes/food.routes";
 
 const app = express();
 app.use(express.json());
 
-app.use('/logging', userRouter);
+app.use('/api', userRouter);
+app.use('/api', foodRouter);
 
 app.get('/', (req, res) => {
   res.send('Hello World!');
