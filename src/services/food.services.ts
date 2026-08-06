@@ -58,3 +58,25 @@ export async function totalMacro(userId: number, targetDate: Date = new Date()){
         }
     });
 }
+
+export async function deleteFood(foodId: number, userId: number){
+    const food = await prisma.food.findUnique({
+        where: {
+            id: foodId,
+        }
+    });
+
+    if (!food){
+        throw new Error("Food not found");
+    }
+
+    if (food.userId != userId){
+        throw new Error("Forbidden");
+    }
+
+    return await prisma.food.delete({
+        where: {
+            id: foodId
+        }
+    });
+}

@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import { createFood, totalMacro } from '../services/food.services';
+import { createFood, totalMacro, deleteFood } from '../services/food.services';
 
 import { AuthRequest } from '../middleware/authMiddleware';
 
@@ -42,5 +42,23 @@ export const totalMacroEntry = async (req: AuthRequest, res:Response): Promise<v
     } catch (error){
       res.status(500).json({error: `Failed to sum macro`}); 
       console.error(error);
+    }
+}
+
+export const deleteFoodEntry =  async (req: AuthRequest, res: Response): Promise<void> => {
+    try {
+      const userId = req.userId;
+      const foodId = Number(req.params.id);
+
+      if (typeof(foodId) !== 'number' || typeof(userId) !== 'number'){
+        res.status(400).json({error: `Food's id must be a number`});
+        return;
+      }
+
+      const delFood = await deleteFood(foodId, userId);
+      res.status(200).json(delFood);
+    } catch (error){
+       res.status(500).json({error: `Failed to delete food.`});
+       console.error(error);
     }
 }

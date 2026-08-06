@@ -6,8 +6,8 @@ import foodRouter from "./routes/food.routes";
 const app = express();
 app.use(express.json());
 
-app.use('/api', userRouter);
-app.use('/api', foodRouter);
+app.use('/user', userRouter);
+app.use('/food', foodRouter);
 
 app.get('/', (req, res) => {
   res.send('Hello World!');
