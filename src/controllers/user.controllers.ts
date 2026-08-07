@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import { createUser, logIn } from '../services/user.services';
+import { createUser, logIn, getProfile } from '../services/user.services';
 import { Gender } from '../generated/prisma';
 import jwt from "jsonwebtoken";
 import { AuthRequest } from '../middleware/authMiddleware';
@@ -62,6 +62,23 @@ export const logInEntry = async(req: AuthRequest, res: Response): Promise<void> 
 
   } catch (error){
     res.status(500).json({error: `Failed to log in. Please try again.`});
+    console.error(error);
+  }
+}
+
+export const getProfileInfo = async (req: AuthRequest, res: Response): Promise<void> => {
+  try {
+    const userId = Number(req.userId);
+
+    if (!userId){
+      res.status(401).json({error: `Unauthorized`});
+    }
+
+    const user = await getProfile(userId);
+
+    res.status(200).json(user);
+  } catch (error){
+    res.status(500).json({error: `Failed to get user's information.`})
     console.error(error);
   }
 }

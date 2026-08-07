@@ -57,3 +57,17 @@ export async function logIn(email: string, password: string){
 
     return user;
 }
+
+export async function getProfile(userId: number){
+    const user = prisma.user.findUnique({
+        where: {
+            id: userId
+        }
+    });
+
+    if (!user){
+        throw new Error(`This user does not exist`);
+    }
+
+    return user;
+}
