@@ -1,7 +1,14 @@
 import { Request, Response } from 'express';
-import { createUser } from '../services/user.services';
+import { createUser, logIn } from '../services/user.services';
 import { Gender } from '../generated/prisma';
 import jwt from "jsonwebtoken";
+import { AuthRequest } from '../middleware/authMiddleware';
+
+interface LoginResult {
+  success: boolean;
+  user?: { id: string; email: string };
+  message?: string;
+}
 
 export const createUserEntry = async(req: Request, res: Response): Promise<void> => {
   try {
@@ -27,6 +34,34 @@ export const createUserEntry = async(req: Request, res: Response): Promise<void>
     res.status(200).json({log, token});
   } catch (error){
     res.status(500).json({error: `Failed to create user log entry`});
+    console.error(error);
+  }
+}
+
+export const logInEntry = async(req: AuthRequest, res: Response): Promise<void> => {
+  try {
+    const { email, password } = req.body;
+
+    if (!email || !password){
+      res.status(400).json({error: `Email and pass is required.`});
+      return;
+    }
+
+    const user = await logIn(email, password);
+    const token = jwt.sign(
+      {userId: user.id},
+      process.env.JWT_SECRET!,
+      { expiresIn: "2h" }
+    );
+
+    res.status(200).json({
+      token,
+      user: { id: user.id, email: user.email }
+    });
+
+
+  } catch (error){
+    res.status(500).json({error: `Failed to log in. Please try again.`});
     console.error(error);
   }
 }

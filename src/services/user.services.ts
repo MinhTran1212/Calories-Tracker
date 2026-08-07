@@ -37,3 +37,23 @@ export async function createUser(
         }
     });
 }
+
+export async function logIn(email: string, password: string){
+    const user = await prisma.user.findUnique({
+        where: {
+            email: email
+        }
+    });
+
+    if (!user){
+        throw new Error(`Invalid email or password.`);
+    }
+
+    const isMatch = await bcrypt.compare(password, user.password);
+
+    if (!isMatch){
+        throw new Error(`Invalid email or password`);
+    }
+
+    return user;
+}
