@@ -16,15 +16,16 @@ model User {
   id    Int   @id @default(autoincrement())
   email String @unique
   password String
-  name  String?
+  name  String
   tdee  Int
   weight Float 
   height Int 
   gender Gender
   age   Int
-  logs  Food[]
   workoutIntensity Float
+  own   Food[]
   createdAt DateTime @default(now())
+  entries Entry[]
 }
 
 model Food {
@@ -36,9 +37,20 @@ model Food {
   fiber     Float
   calories  Float
   grams     Float
-  userId    Int
-  user      User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    Int 
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   createdAt DateTime @default(now())
+  entries Entry[]
+}
+
+model Entry {
+  id        Int  @id() @default(autoincrement())
+  userId    Int
+  foodId    Int     
+  quantity  Float
+  createdAt DateTime @default(now())
+  food      Food @relation(fields: [foodId], references: [id], onDelete: Cascade)
+  user      User @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 enum Gender {

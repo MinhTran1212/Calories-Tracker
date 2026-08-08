@@ -1,0 +1,2 @@
+-- AlterTable
+ALTER TABLE "Entry" ALTER COLUMN "quantity" SET DATA TYPE DOUBLE PRECISION;

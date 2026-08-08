@@ -11,6 +11,15 @@ export interface CreateFoodInput {
   userId: number;   // or number, depending on your schema
 }
 
+export interface Food {
+  foodName: string;
+  protein: number;  // per 100g
+  carb: number;     // per 100g
+  fat: number;      // per 100g
+  fiber: number;
+  quantity: number; // grams
+}
+
 export async function createFood(data: CreateFoodInput) {
     const {foodName, protein, carb, fat, fiber, quantity, userId} = data;
     const rawCalories = ((protein * 4) + (carb * 4) + (fat * 9)) * (quantity / 100);
@@ -37,6 +46,10 @@ export async function totalMacro(userId: number, targetDate: Date = new Date()){
 
     const endOfDay = new Date(targetDate);
     endOfDay.setHours(23,59,59,999);
+
+    if (!userId){
+        throw new Error(`This user does not exist.`);
+    }
 
     return await prisma.food.aggregate({
         where: {
@@ -80,3 +93,53 @@ export async function deleteFood(foodId: number, userId: number){
         }
     });
 }
+
+export async function getAllFood(userId: number){
+    if (!userId){
+        throw new Error(`This user does not exist.`);
+    }
+
+    const foods = await prisma.food.findMany({
+        where: {
+            userId: userId
+        }
+    })
+
+    return foods;
+}
+
+export async function getOneFood(id: number){
+
+
+    if (!id){
+        throw new Error(`The food with this id does not exist.`);
+    }
+
+    const food = await prisma.food.findFirst({
+        where: {
+            id: id 
+        }
+    })
+
+    return food;
+}
+
+export async function updateFood(data: Food, userId: number, id: number){
+    if (!userId){
+        throw new Error(`This user does not exist.`);
+    }
+
+    if (!id){
+        throw new Error(`The food with this id does not exist.`);
+    }
+
+    return await prisma.food.updateMany({
+        where: {
+            id:  id,
+            userId: userId
+        },
+        data
+    });
+}
+
+

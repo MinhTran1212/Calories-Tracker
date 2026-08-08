@@ -1,12 +1,18 @@
 import { Request, Response } from 'express';
-import { createFood, totalMacro, deleteFood } from '../services/food.services';
+import { createFood, totalMacro, deleteFood, getAllFood, getOneFood, updateFood} from '../services/food.services';
 
 import { AuthRequest } from '../middleware/authMiddleware';
-
+ 
 export const createFoodEntry = async (req: AuthRequest, res: Response): Promise<void> => {
     try {
         const { name, protein, carb, fat, fiber, quantity } = req.body;
         const userId = req.userId;
+
+        if (!userId){
+          res.status(401).json({error: `Unauthorized.`});
+          return;
+        }
+
         if (
           !name ||
           typeof protein !== 'number' || protein < 0 ||
@@ -37,6 +43,12 @@ export const createFoodEntry = async (req: AuthRequest, res: Response): Promise<
 export const totalMacroEntry = async (req: AuthRequest, res:Response): Promise<void> => {
     try {
       const userId = req.userId;
+
+      if (!userId){
+        res.status(401).json({error: `Unauthorized.`});
+        return;
+      }
+
       const sumMacro = await totalMacro(Number(userId));
       res.status(200).json(sumMacro);
     } catch (error){
@@ -50,6 +62,16 @@ export const deleteFoodEntry =  async (req: AuthRequest, res: Response): Promise
       const userId = req.userId;
       const foodId = Number(req.params.id);
 
+      if (!userId){
+        res.status(401).json({error: `Unauthorized.`});
+        return;
+      } 
+
+      if (!foodId){
+        res.status(401).json({error: `No food exist with this id.`});
+        return;
+      }
+
       if (typeof(foodId) !== 'number' || typeof(userId) !== 'number'){
         res.status(400).json({error: `Food's id must be a number`});
         return;
@@ -60,5 +82,69 @@ export const deleteFoodEntry =  async (req: AuthRequest, res: Response): Promise
     } catch (error){
        res.status(500).json({error: `Failed to delete food.`});
        console.error(error);
+    }
+}
+
+export const getAllFoodEntry = async (req: AuthRequest, res: Response): Promise<void> => {
+    try {
+      const userId = Number(req.userId);
+
+      if (!userId){
+        res.status(401).json({error: `Unauthorized.`});
+        return;
+      }
+
+      const foods = await getAllFood(userId);
+
+      res.status(200).json(foods);
+
+    } catch (error){
+      res.status(500).json({error: `Failed to get all food.`})
+      console.error(error);
+    }
+}
+
+export const getOneFoodEntry = async (req: Request, res: Response): Promise<void> => {
+    try {
+      const id = Number(req.params.id);
+
+      if (!id){
+        res.status(401).json({error: `No food exist with this id.`});
+        return;
+      }
+
+      const food = await getOneFood(id);
+
+      res.status(200).json(food);
+      
+    } catch (error) {
+      res.status(500).json({error: `Failed to get food's nutrition.`})
+      console.error(error);
+    }
+}
+
+export const updateFoodEntry = async (req: AuthRequest, res: Response): Promise<void> => {
+    try {
+      const { foodName, protein, carb, fat, fiber, quantity } = req.body;
+      const userId = req.userId;
+      const id = Number(req.params.id);
+
+      if (!userId){
+        res.status(401).json({error: `Unauthorized.`});
+        return;
+      } 
+
+      if (!id){
+        res.status(401).json({error: `No food exist with this id.`});
+        return;
+      }
+
+      const food = await updateFood({ foodName, protein, carb, fat, fiber, quantity }, userId, id)
+      
+      res.status(200).json({ entry: food });
+
+    } catch (error) {
+      res.status(500).json({error: `Failed to get food's nutrition.`})
+      console.error(error);
     }
 }
