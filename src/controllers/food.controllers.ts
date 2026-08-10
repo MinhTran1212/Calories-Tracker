@@ -86,14 +86,7 @@ export const deleteFoodEntry =  async (req: AuthRequest, res: Response): Promise
 
 export const getAllFoodEntry = async (req: AuthRequest, res: Response): Promise<void> => {
     try {
-      const userId = Number(req.userId);
-
-      if (!userId){
-        res.status(401).json({error: `Unauthorized.`});
-        return;
-      }
-
-      const foods = await getAllFood(userId);
+      const foods = await getAllFood();
 
       res.status(200).json(foods);
 

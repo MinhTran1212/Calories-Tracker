@@ -1,4 +1,11 @@
-const state = { token: localStorage.getItem('good-measure-token'), profile: null, foods: [], entries: [], totals: null, register: false };
+const state = { token: localStorage.getItem('good-measure-token'), profile: null, foods: [], entries: [], totals: null, register: false, selectedMealFood: null };
+const intensityOptions = [
+  ['1.2', 'Sedentary', 'Little or no exercise'],
+  ['1.375', 'Lightly Active', 'Light exercise 1-3 days/week'],
+  ['1.55', 'Moderately Active', 'Exercise 3-5 days/week'],
+  ['1.725', 'Very Active', 'Hard exercise 6-7 days/week'],
+  ['1.9', 'Extremely Active', 'Very hard training or physical job'],
+];
 const $ = (selector) => document.querySelector(selector);
 const $$ = (selector) => [...document.querySelectorAll(selector)];
 const money = (value) => Math.round(Number(value || 0));
@@ -71,6 +78,34 @@ function setProfile(profile) {
   form.weight.value = profile.weight;
   form.height.value = profile.height;
   form.age.value = profile.age;
+  setSelectedIntensity(profile.workoutIntensity);
+}
+
+function setSelectedIntensity(value) {
+  const selected = Number(value);
+  $$('[data-intensity]').forEach((button) => {
+    button.classList.toggle('selected', Number(button.dataset.intensity) === selected);
+  });
+  const input = $('#profile-intensity-input');
+  if (input) input.value = String(value);
+}
+
+function setupIntensityButtons() {
+  const style = document.createElement('style');
+  style.textContent = '.intensity-picker{margin:23px 0 0}.intensity-label{display:block;color:var(--ink);font-size:12px;font-weight:700;margin-bottom:9px}.intensity-options{display:grid;grid-template-columns:repeat(5,1fr);gap:6px}.intensity-option{border:1px solid var(--line);background:#f8faf5;border-radius:7px;padding:10px 7px;color:var(--muted);min-height:91px;text-align:left;transition:.2s ease}.intensity-option strong,.intensity-option small,.intensity-option em{display:block}.intensity-option strong{font-size:10px;line-height:1.25;color:var(--ink)}.intensity-option small{font-size:9px;line-height:1.35;margin-top:5px}.intensity-option em{font-family:"DM Mono",monospace;font-style:normal;font-size:9px;margin-top:7px;color:var(--green)}.intensity-option:hover{border-color:var(--green);color:var(--green)}.intensity-option.selected{background:var(--green);border-color:var(--green);color:#fff;box-shadow:0 5px 13px rgba(49,108,88,.18)}.intensity-option.selected strong,.intensity-option.selected em{color:#fff}.intensity-option.selected small{color:#d4e3da}.app-view .brand{cursor:pointer}.app-view .brand:focus-visible{outline:2px solid var(--green);outline-offset:5px;border-radius:5px}.meal-food-results{display:flex;flex-direction:column;gap:6px;margin:-4px 0 16px;max-height:190px;overflow:auto}.meal-food-result{display:flex;align-items:center;justify-content:space-between;gap:12px;width:100%;border:1px solid var(--line);border-radius:7px;background:#f8faf5;padding:11px 12px;text-align:left;color:var(--ink)}.meal-food-result:hover,.meal-food-result.selected{border-color:var(--green);background:#e8f0e7}.meal-food-result span{min-width:0}.meal-food-result strong,.meal-food-result small{display:block}.meal-food-result strong{font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.meal-food-result small{font-size:10px;color:var(--muted);margin-top:3px}.meal-food-result em{font-family:"DM Mono",monospace;font-style:normal;font-size:10px;color:var(--green);white-space:nowrap}.dialog-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:4px}@media(max-width:560px){.intensity-options{grid-template-columns:repeat(2,1fr)}.intensity-option:last-child{grid-column:span 2}}';
+  document.head.appendChild(style);
+  const form = $('#profile-form');
+  const submitButton = form.querySelector('button[type="submit"]');
+  const group = document.createElement('div');
+  group.className = 'intensity-picker';
+  group.innerHTML = `<span class="intensity-label">Workout intensity</span><div class="intensity-options">${intensityOptions.map(([value, label, note]) => `<button type="button" class="intensity-option" data-intensity="${value}" title="${note}"><strong>${label}</strong><small>${note}</small><em>${value}x</em></button>`).join('')}</div>`;
+  const input = document.createElement('input');
+  input.type = 'hidden';
+  input.name = 'workoutIntensity';
+  input.id = 'profile-intensity-input';
+  form.insertBefore(group, submitButton);
+  form.insertBefore(input, submitButton);
+  $$('[data-intensity]').forEach((button) => button.addEventListener('click', () => setSelectedIntensity(button.dataset.intensity)));
 }
 
 function renderTotals() {
@@ -103,7 +138,7 @@ function renderMeals() {
 
 function renderFoods(filter = '') {
   const foods = state.foods.filter((food) => food.name.toLowerCase().includes(filter.toLowerCase()));
-  $('#food-list').innerHTML = foods.length ? foods.map((food) => `<article class="food-card"><header><div><h3>${escapeHtml(food.name)}</h3><small>${money(food.grams)}g serving</small></div><button class="delete-button" data-delete-food="${food.id}" title="Delete food">×</button></header><div class="food-stats"><span><b>${money(food.protein)}g</b> pro</span><span><b>${money(food.carb)}g</b> carb</span><span><b>${money(food.fat)}g</b> fat</span></div><footer><strong>${money(food.calories)} <small>kcal</small></strong><span class="mono">${money(food.fiber)}g fiber</span></footer></article>`).join('') : '<div class="empty-state"><strong>No foods found.</strong><span>Add a saved food to make meal logging quick.</span></div>';
+  $('#food-list').innerHTML = foods.length ? foods.map((food) => `<article class="food-card"><header><div><h3>${escapeHtml(food.name)}</h3><small>${money(food.grams)}g serving</small></div><button class="delete-button${Number(food.userId) === Number(state.profile?.id) ? '' : ' locked'}" data-delete-food="${food.id}" title="${Number(food.userId) === Number(state.profile?.id) ? 'Delete food' : 'Cannot delete another person’s food'}">${Number(food.userId) === Number(state.profile?.id) ? '×' : '🔒'}</button></header><div class="food-stats"><span><b>${money(food.protein)}g</b> pro</span><span><b>${money(food.carb)}g</b> carb</span><span><b>${money(food.fat)}g</b> fat</span></div><footer><strong>${money(food.calories)} <small>kcal</small></strong><span class="mono">${money(food.fiber)}g fiber</span></footer></article>`).join('') : '<div class="empty-state"><strong>No foods found.</strong><span>Add a saved food to make meal logging quick.</span></div>';
   $$('[data-delete-food]').forEach((button) => button.addEventListener('click', () => deleteFood(button.dataset.deleteFood)));
 }
 
@@ -113,11 +148,56 @@ async function refreshDashboard() {
   state.totals = totals.totals || {};
   state.entries = Array.isArray(entries) ? entries : [];
   state.foods = Array.isArray(foods) ? foods : [];
-  renderTotals(); renderMeals(); renderFoods($('#food-search').value); populateMealFoods();
+  renderTotals(); renderMeals(); renderFoods($('#food-search').value);
 }
-function populateMealFoods() { $('#meal-food-select').innerHTML = state.foods.length ? state.foods.map((food) => `<option value="${food.id}">${escapeHtml(food.name)} · ${money(food.grams)}g</option>`).join('') : '<option value="">Add a food first</option>'; }
+let mealSearchTimer;
+async function searchMealFoods(query) {
+  const results = $('#meal-food-results');
+  state.selectedMealFood = null;
+  $('#selected-food-id').value = '';
+  if (!query.trim()) {
+    results.innerHTML = '<p class="form-hint">Start typing to search your food library.</p>';
+    return;
+  }
+  results.innerHTML = '<p class="form-hint">Searching...</p>';
+  try {
+    const response = await api(`/food/search?q=${encodeURIComponent(query.trim())}`);
+    const foods = response.foods || [];
+    results.innerHTML = foods.length ? foods.map((food) => `<button type="button" class="meal-food-result" data-meal-food="${food.id}"><span><strong>${escapeHtml(food.name)}</strong><small>${money(food.grams)}g serving · ${money(food.calories)} kcal</small><small class="search-macros">P ${money(food.protein)}g · C ${money(food.carb)}g · F ${money(food.fat)}g · Fiber ${money(food.fiber)}g</small></span><em>Select</em></button>`).join('') : '<p class="form-hint">No matching foods found. Add it to your food library first.</p>';
+    $$('[data-meal-food]').forEach((button) => button.addEventListener('click', () => selectMealFood(foods.find((food) => String(food.id) === button.dataset.mealFood))));
+  } catch (error) {
+    results.innerHTML = `<p class="form-hint">${escapeHtml(error.message)}</p>`;
+  }
+}
+function selectMealFood(food) {
+  if (!food) return;
+  state.selectedMealFood = food;
+  $('#selected-food-id').value = food.id;
+  $('#meal-food-search').value = food.name;
+  $('#meal-food-results').innerHTML = `<button type="button" class="meal-food-result selected"><span><strong>${escapeHtml(food.name)}</strong><small>${money(food.grams)}g serving · ${money(food.calories)} kcal</small><small class="search-macros">P ${money(food.protein)}g · C ${money(food.carb)}g · F ${money(food.fat)}g · Fiber ${money(food.fiber)}g</small></span><em>Change</em></button>`;
+  $('#meal-food-results button').addEventListener('click', () => searchMealFoods($('#meal-food-search').value));
+}
+function resetMealDialog() {
+  $('#meal-form').reset();
+  state.selectedMealFood = null;
+  $('#meal-food-results').innerHTML = '<p class="form-hint">Start typing to search your food library.</p>';
+}
+$$('.dialog-close').forEach((button) => button.addEventListener('click', (event) => {
+  event.preventDefault();
+  const dialog = button.closest('dialog');
+  if (dialog.id === 'meal-dialog') resetMealDialog();
+  dialog.close();
+}));
 async function deleteEntry(id) { try { await api(`/entry/${id}`, { method: 'DELETE' }); await refreshDashboard(); showToast('Meal removed from your day.'); } catch (error) { showToast(error.message); } }
-async function deleteFood(id) { if (!window.confirm('Delete this food from your library?')) return; try { await api(`/food/${id}`, { method: 'DELETE' }); await refreshDashboard(); showToast('Food removed.'); } catch (error) { showToast(error.message); } }
+async function deleteFood(id) {
+  const food = state.foods.find((item) => Number(item.id) === Number(id));
+  if (food && Number(food.userId) !== Number(state.profile?.id)) {
+    showToast('Cannot delete another person’s food.');
+    return;
+  }
+  if (!window.confirm('Delete this food from your library?')) return;
+  try { await api(`/food/${id}`, { method: 'DELETE' }); await refreshDashboard(); showToast('Food removed.'); } catch (error) { showToast(error.message); }
+}
 
 function switchView(view) {
   $$('.nav-item').forEach((item) => item.classList.toggle('active', item.dataset.view === view));
@@ -135,11 +215,25 @@ $('#auth-form').addEventListener('submit', handleAuth);
 $('#auth-toggle').addEventListener('click', () => setAuthMode(!state.register));
 $('#logout-button').addEventListener('click', () => { localStorage.removeItem('good-measure-token'); state.token = null; $('#app-view').classList.add('hidden'); $('#auth-view').classList.remove('hidden'); setAuthMode(false); });
 $$('.nav-item').forEach((item) => item.addEventListener('click', () => switchView(item.dataset.view)));
+$$('.app-view .brand').forEach((brand) => {
+  brand.setAttribute('role', 'button');
+  brand.setAttribute('tabindex', '0');
+  brand.setAttribute('title', 'Go to homepage');
+  brand.addEventListener('click', () => switchView('today'));
+  brand.addEventListener('keydown', (event) => {
+    if (event.key === 'Enter' || event.key === ' ') {
+      event.preventDefault();
+      switchView('today');
+    }
+  });
+});
 $('#food-search').addEventListener('input', (event) => renderFoods(event.target.value));
 ['#add-food-button', '#add-food-button-secondary'].forEach((selector) => $(selector).addEventListener('click', () => $('#food-dialog').showModal()));
-$('#log-meal-button').addEventListener('click', () => { populateMealFoods(); $('#meal-dialog').showModal(); });
+$('#log-meal-button').addEventListener('click', () => { resetMealDialog(); $('#meal-dialog').showModal(); });
+$('#meal-food-search').addEventListener('input', (event) => { window.clearTimeout(mealSearchTimer); mealSearchTimer = window.setTimeout(() => searchMealFoods(event.target.value), 250); });
+$('#cancel-meal-button').addEventListener('click', () => { resetMealDialog(); $('#meal-dialog').close(); });
 $('#food-form').addEventListener('submit', async (event) => { event.preventDefault(); const values = formValues(event.target); try { await api('/food/create', { method: 'POST', body: JSON.stringify({ name: values.name, protein: Number(values.protein), carb: Number(values.carb), fat: Number(values.fat), fiber: Number(values.fiber), quantity: Number(values.quantity) }) }); event.target.reset(); $('#food-dialog').close(); await refreshDashboard(); showToast('Food saved to your library.'); } catch (error) { showToast(error.message); } });
-$('#meal-form').addEventListener('submit', async (event) => { event.preventDefault(); const values = formValues(event.target); try { await api('/entry/create', { method: 'POST', body: JSON.stringify({ foodId: Number(values.foodId), quantity: Number(values.quantity) }) }); $('#meal-dialog').close(); await refreshDashboard(); showToast('Meal added to your day.'); } catch (error) { showToast(error.message); } });
+$('#meal-form').addEventListener('submit', async (event) => { event.preventDefault(); const values = formValues(event.target); if (!values.foodId) { showToast('Choose a food before adding the meal.'); return; } try { await api('/entry/create', { method: 'POST', body: JSON.stringify({ foodId: Number(values.foodId), quantity: Number(values.quantity) }) }); resetMealDialog(); $('#meal-dialog').close(); await refreshDashboard(); showToast('Meal added to your day.'); } catch (error) { showToast(error.message); } });
 $('#profile-form').addEventListener('submit', async (event) => {
   event.preventDefault();
   const values = formValues(event.target);
@@ -151,6 +245,7 @@ $('#profile-form').addEventListener('submit', async (event) => {
         weight: Number(values.weight),
         height: Number(values.height),
         age: Number(values.age),
+        workoutIntensity: Number(values.workoutIntensity),
       }),
     });
     setProfile(profile);
@@ -160,4 +255,5 @@ $('#profile-form').addEventListener('submit', async (event) => {
     showToast(error.message);
   }
 });
+setupIntensityButtons();
 if (state.token) startApp();

@@ -94,14 +94,10 @@ export async function deleteFood(foodId: number, userId: number){
     });
 }
 
-export async function getAllFood(userId: number){
-    if (!userId){
-        throw new Error(`This user does not exist.`);
-    }
-
+export async function getAllFood(){
     const foods = await prisma.food.findMany({
-        where: {
-            userId: userId
+        orderBy: {
+            name: 'asc'
         }
     })
 

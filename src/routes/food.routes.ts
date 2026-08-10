@@ -7,9 +7,9 @@ const router = Router();
 router.post("/create", requireAuth, createFoodEntry);
 router.post("/summacro", requireAuth, totalMacroEntry);
 router.delete("/:id", requireAuth, deleteFoodEntry);
-router.get("/all", requireAuth, getAllFoodEntry);
-router.get("/:id", getOneFoodEntry);
+router.get("/all", getAllFoodEntry);
 router.patch("/:id", requireAuth, updateFoodEntry);
 router.get("/search", requireAuth, searchFoods2);
+router.get("/:id", getOneFoodEntry);
 
 export default router;
