@@ -27,12 +27,12 @@ export function scaleNutrition(food: { name: string ; grams: number; protein: nu
   return {
     id: entryId,
     name: food.name,
-    totalGrams: food.grams * multiplier,
-    protein: food.protein * multiplier,
-    carb: food.carb * multiplier,
-    fat: food.fat * multiplier,
-    fiber: food.fiber * multiplier,
-    calories: food.calories * multiplier,
+    totalGrams: Math.round(food.grams * multiplier),
+    protein: Math.round(food.protein * multiplier),
+    carb: Math.round(food.carb * multiplier),
+    fat: Math.round(food.fat * multiplier),
+    fiber: Math.round(food.fiber * multiplier),
+    calories: Math.round(food.calories * multiplier),
   };
 }
 
@@ -64,4 +64,90 @@ export async function getEntryWithNutrtion(userId: number, entryId: number){
     const multiplier = entry?.quantity;
 
     return scaleNutrition(entry.food, entry.id, multiplier);
+}
+
+
+export async function getEntriesForDay(userId: number, targetDate: Date = new Date()){
+    if (!userId){
+        throw new Error(`User does not exist.`);
+    }
+
+    const startOfDay = new Date(targetDate);
+    startOfDay.setHours(0,0,0,0);
+    const endOfDay = new Date(targetDate);
+    endOfDay.setHours(23,59,59,999);
+
+    const entries = await prisma.entry.findMany({
+        where: {
+            userId: userId,
+            createdAt: {
+                gte: startOfDay,
+                lte: endOfDay
+            }
+        }
+    })
+
+     return entries;
+}
+
+export async function getDailyTotals(userId: number, targetDate: Date = new Date()) {
+  if (!userId) {
+    throw new Error("This user does not exist.");
+  }
+
+  const startOfDay = new Date(targetDate);
+  startOfDay.setHours(0, 0, 0, 0);
+
+  const endOfDay = new Date(targetDate);
+  endOfDay.setHours(23, 59, 59, 999);
+
+  const entries = await prisma.entry.findMany({
+    where: {
+      userId,
+      createdAt: { gte: startOfDay, lte: endOfDay },
+    },
+    include: { food: true },
+  });
+
+  const totals = entries.reduce(
+    (acc, entry) => {
+      const multiplier = entry.quantity;
+      acc.protein += entry.food.protein * multiplier;
+      acc.carb += entry.food.carb * multiplier;
+      acc.fat += entry.food.fat * multiplier;
+      acc.fiber += entry.food.fiber * multiplier;
+      acc.calories += entry.food.calories * multiplier;
+      return acc;
+    },
+    { protein: 0, carb: 0, fat: 0, fiber: 0, calories: 0 }
+  );
+
+  return {
+    ...totals,
+    count: entries.length,
+  };
+}
+
+export async function getEntriesBreakdownForDay(userId: number, targetDate: Date = new Date()){
+    if (!userId){
+        throw new Error(`User does not exist.`);
+    }
+
+    const startOfDay = new Date(targetDate);
+    startOfDay.setHours(0,0,0,0);
+    const endOfDay = new Date(targetDate);
+    endOfDay.setHours(23,59,59,999);
+
+    const entries = await prisma.entry.findMany({
+        where: {
+            userId: userId,
+            createdAt: {
+                gte: startOfDay,
+                lte: endOfDay
+            }
+        },
+        include: { food: true }
+    })
+
+     return entries.map((entry) => scaleNutrition(entry.food, entry.id, entry.quantity));
 }

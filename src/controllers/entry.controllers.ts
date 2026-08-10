@@ -1,6 +1,6 @@
 import { AuthRequest } from '../middleware/authMiddleware';
 import { Request, Response } from 'express';
-import { createEntry, getEntryWithNutrtion, scaleNutrition } from '../services/entry.services';
+import { createEntry, getEntryWithNutrtion, scaleNutrition, getEntriesForDay, getDailyTotals, getEntriesBreakdownForDay } from '../services/entry.services';
 import prisma from '../lib/prisma';
 
 export const createEntry2 = async (req: AuthRequest, res: Response): Promise<void> => {
@@ -50,4 +50,77 @@ export const getEntryWithNutrtion2 = async (req: AuthRequest, res: Response): Pr
     res.status(500).json({error: `Failed to get entry nutrition`});
     console.error(error);
   }
+}
+
+export const getEntriesForDay2 = async (req: AuthRequest, res: Response): Promise<void> => {
+  try {
+    const userId = req.userId;
+     if (!userId){
+      res.status(402).json({error: `Unauthorized.`});
+      return;
+     }
+     
+     const entries  = await getEntriesForDay(userId);
+     res.status(200).json(entries);
+    
+  } catch (error) {
+    res.status(500).json({error: `Failed to get entries for the day`});
+    console.error(error);
+  }
+}
+
+export const getDailyTotals2 = async (req: AuthRequest, res: Response): Promise<void> => {
+  try {
+    const userId = req.userId;
+
+    if (!userId) {
+      res.status(401).json({ error: "Unauthorized." });
+      return;
+    }
+
+    const dateParam = req.query.date;
+    const targetDate = dateParam ? new Date(dateParam as string) : new Date();
+
+    if (isNaN(targetDate.getTime())) {
+      res.status(400).json({ error: "Invalid date." });
+      return;
+    }
+
+    const totals = await getDailyTotals(userId, targetDate);
+
+    res.status(200).json({ totals });
+
+  } catch (error) {
+    res.status(500).json({ error: "Failed to get daily totals." });
+    console.error(error);
+  }
+};
+
+export const getEntriesBreakdownForDay2 = async (req: AuthRequest, res: Response): Promise<void> => {
+  try {
+    const userId = req.userId;
+
+    if (!userId) {
+      res.status(401).json({ error: "Unauthorized." });
+      return;
+    }
+
+    const dateParam = req.query.date;
+    const targetDate = dateParam ? new Date(dateParam as string) : new Date();
+
+    if (isNaN(targetDate.getTime())) {
+      res.status(400).json({ error: "Invalid date." });
+      return;
+    }
+    const entries = await getEntriesBreakdownForDay(userId, targetDate);
+
+    res.status(200).json(entries);
+  } catch (error){
+    console.error(error);
+    res.status(500).json({error: `Failed to get nutrition of each meal.`})
+  }
+
+
+
+
 }
