@@ -2,6 +2,17 @@ import prisma from "../lib/prisma";
 import { Gender } from "../generated/prisma";
 import bcrypt from "bcrypt";
 
+interface UpdateProfile {
+    name: string,
+    email: string, 
+    password: string,
+    weight: number,
+    height: number,
+    gender: Gender,
+    age: number, 
+    workoutIntensity: number
+}
+
 export async function createUser(
     name: string,
     email: string, 
@@ -70,4 +81,44 @@ export async function getProfile(userId: number){
     }
 
     return user;
+}
+
+export async function updateProfile(userId: number, data: UpdateProfile) {
+  if (!userId) {
+    throw new Error("User does not exist.");
+  }
+
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+  });
+
+  if (!user) {
+    throw new Error("No user found.");
+  }
+
+  const updatedUser = await prisma.user.update({
+    where: { id: userId },
+    data,
+  });
+
+  const weight = updatedUser.weight;
+  const height = updatedUser.height;
+  const age = updatedUser.age;
+  const workoutIntensity = updatedUser.workoutIntensity;
+  const gender = updatedUser.gender;
+
+  let bmr = 0;
+
+  if (gender === Gender.MALE) {
+    bmr = (10 * weight) + (6.25 * height) - (5 * age) + 5;
+  } else if (gender === Gender.FEMALE) {
+    bmr = (10 * weight) + (6.25 * height) - (5 * age) - 161;
+  }
+
+  const tdee = Math.round(bmr * workoutIntensity);
+
+  return await prisma.user.update({
+    where: { id: userId },
+    data: { tdee },
+  });
 }

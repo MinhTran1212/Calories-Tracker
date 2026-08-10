@@ -145,7 +145,7 @@ export const updateEntry2 = async (req: AuthRequest, res: Response): Promise<voi
       return;
     }
 
-    updateEntry(userId, entryId, {foodId, quantity});
+    await updateEntry(userId, entryId, {foodId, quantity});
     res.status(200).json({message: `Updated sucessfully`});
 
   } catch (error) {
@@ -171,7 +171,7 @@ export const deleteEntry2 = async (req: AuthRequest, res: Response): Promise<voi
     }
 
           
-    const delEntry = deleteEntry(userId, entryId);
+    const delEntry = await deleteEntry(userId, entryId);
     res.status(200).json({ message: "Food deleted.", food: delEntry });
 
   } catch (error) {

@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import { createUser, logIn, getProfile } from '../services/user.services';
+import { createUser, logIn, getProfile, updateProfile } from '../services/user.services';
 import { Gender } from '../generated/prisma';
 import jwt from "jsonwebtoken";
 import { AuthRequest } from '../middleware/authMiddleware';
@@ -89,6 +89,69 @@ export const getProfileInfo = async (req: AuthRequest, res: Response): Promise<v
     res.status(200).json(user);
   } catch (error){
     res.status(500).json({error: `Failed to get user's information.`})
+    console.error(error);
+  }
+}
+
+export const updateProfile2 = async (req: AuthRequest, res: Response): Promise<void> => {
+  try {
+    const userId = Number(req.userId); 
+    const { name, email, password, weight, height, gender, age, workoutIntensity } = req.body;
+
+    if (name !== undefined && typeof name !== 'string') {
+      res.status(400).json({ error: "Name must be a string." });
+      return;
+    }
+
+    if (email !== undefined) {
+      if (typeof email !== 'string' || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+        res.status(400).json({ error: "Invalid email format." });
+        return;
+      }
+    }
+
+    if (password !== undefined && typeof password !== 'string') {
+      res.status(400).json({ error: "Password must be a string." });
+      return;
+    }
+
+    if (weight !== undefined && (typeof weight !== 'number' || weight <= 0)) {
+      res.status(400).json({ error: "Weight must be a positive number." });
+      return;
+    }
+
+    if (height !== undefined && (typeof height !== 'number' || height <= 0)) {
+      res.status(400).json({ error: "Height must be a positive number." });
+      return;
+    }
+
+    if (gender !== undefined && gender !== 'MALE' && gender !== 'FEMALE') {
+      res.status(400).json({ error: "Gender must be MALE or FEMALE." });
+      return;
+    }
+
+    if (age !== undefined && (typeof age !== 'number' || age <= 0 || !Number.isInteger(age))) {
+      res.status(400).json({ error: "Age must be a positive whole number." });
+      return;
+    }
+
+    if (workoutIntensity !== undefined && (typeof workoutIntensity !== 'number' || workoutIntensity < 0)) {
+      res.status(400).json({ error: "Workout intensity must be a valid number." });
+      return;
+    }
+
+    if (!userId){
+      res.status(401).json({error: `Unauthorized`});
+    }
+
+    const update = await updateProfile(userId, { name, email, password, weight, height, gender, age, workoutIntensity });
+    const profile = await getProfile(userId)
+    
+
+    res.status(200).json(update);
+
+  } catch(error){
+    res.status(500).json({error: `Failed to update user's information.`})
     console.error(error);
   }
 }
