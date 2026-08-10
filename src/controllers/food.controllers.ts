@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import { createFood, totalMacro, deleteFood, getAllFood, getOneFood, updateFood} from '../services/food.services';
+import { createFood, totalMacro, deleteFood, getAllFood, getOneFood, updateFood, searchFoods} from '../services/food.services';
 import { AuthRequest } from '../middleware/authMiddleware';
  
 export const createFoodEntry = async (req: AuthRequest, res: Response): Promise<void> => {
@@ -147,3 +147,29 @@ export const updateFoodEntry = async (req: AuthRequest, res: Response): Promise<
       console.error(error);
     }
 }
+
+export const searchFoods2 = async (req: AuthRequest, res: Response): Promise<void> => {
+  try {
+    const userId = req.userId;
+
+    if (!userId) {
+      res.status(401).json({ error: "Unauthorized." });
+      return;
+    }
+
+    const query = req.query.q;
+
+    if (!query || typeof query !== 'string') {
+      res.status(400).json({ error: "Search query is required." });
+      return;
+    }
+
+    const foods = await searchFoods(query);
+
+    res.status(200).json({ foods });
+
+  } catch (error) {
+    res.status(500).json({ error: "Failed to search foods." });
+    console.error(error);
+  }
+};

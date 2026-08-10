@@ -10,6 +10,10 @@ interface LoginResult {
   message?: string;
 }
 
+function isValidEmail(email: string): boolean {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+}
+
 export const createUserEntry = async(req: Request, res: Response): Promise<void> => {
   try {
     const { name, email, password, weight, height, gender, age, workoutIntensity } = req.body;
@@ -23,6 +27,12 @@ export const createUserEntry = async(req: Request, res: Response): Promise<void>
     ){
       res.status(200).json({error: `Invalid or missing parameters. Personal information must be valid numbers.`});
     }
+
+    if (!isValidEmail(email)) {
+      res.status(400).json({ error: "Invalid email format." });
+      return;
+    }
+    
     const log = await createUser(name, email, password, weight, height, gender, age, workoutIntensity);
 
     const token = jwt.sign(

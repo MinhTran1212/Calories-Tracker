@@ -117,11 +117,11 @@ export async function getDailyTotals(userId: number, targetDate: Date = new Date
   const totals = entries.reduce(
     (acc, entry) => {
       const multiplier = entry.quantity;
-      acc.protein += entry.food.protein * multiplier;
-      acc.carb += entry.food.carb * multiplier;
-      acc.fat += entry.food.fat * multiplier;
-      acc.fiber += entry.food.fiber * multiplier;
-      acc.calories += entry.food.calories * multiplier;
+      acc.protein += Math.round(entry.food.protein * multiplier);
+      acc.carb += Math.round(entry.food.carb * multiplier);
+      acc.fat += Math.round(entry.food.fat * multiplier);
+      acc.fiber += Math.round(entry.food.fiber * multiplier);
+      acc.calories += Math.round(entry.food.calories * multiplier);
       return acc;
     },
     { protein: 0, carb: 0, fat: 0, fiber: 0, calories: 0 }
