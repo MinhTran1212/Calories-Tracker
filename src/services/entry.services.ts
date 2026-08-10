@@ -1,6 +1,11 @@
 import { Request, Response } from 'express';
 import prisma from "../lib/prisma";
 
+interface UpdateEntry {
+    foodId: number,
+    quantity: number
+}
+
 export async function createEntry(userId: number, foodId: number, quantity: number){
     if (!userId){
         throw new Error(`The user with this id does not exist`);
@@ -150,4 +155,61 @@ export async function getEntriesBreakdownForDay(userId: number, targetDate: Date
     })
 
      return entries.map((entry) => scaleNutrition(entry.food, entry.id, entry.quantity));
+}
+
+export async function updateEntry(userId: number, id: number, data: UpdateEntry){
+    if (!userId){
+        throw new Error(`This user does not exist.`);
+    }
+
+    if (!id){
+        throw new Error(`The user with this id does not exist.`);
+    }
+
+    const entry = await prisma.entry.findUnique({
+        where: { id: id }
+    });
+
+    if (!entry){
+        throw new Error(`Cannot find user with this id`);
+    }
+
+    if (userId !== entry.userId){
+        throw new Error(`Forbidden`);
+    }
+
+    return await prisma.entry.update({
+        where: {
+            id: id
+        },
+        data
+    });
+}
+
+export async function deleteEntry(userId: number, id: number){
+    if (!userId){
+        throw new Error(`This user does not exist.`);
+    }
+
+    if (!id){
+        throw new Error(`The user with this id does not exist.`);
+    }
+
+    const entry = await prisma.entry.findUnique({
+        where: { id: id }
+    });
+
+    if (!entry){
+        throw new Error(`Cannot find user with this id`);
+    }
+
+    if (userId !== entry.userId){
+        throw new Error(`Forbidden`);
+    }
+
+    return await prisma.entry.delete({
+        where: {
+            id: id
+        }
+    });
 }
