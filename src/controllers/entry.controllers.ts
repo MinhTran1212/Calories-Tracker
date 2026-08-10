@@ -145,9 +145,9 @@ export const updateEntry2 = async (req: AuthRequest, res: Response): Promise<voi
       return;
     }
 
-    const entry = updateEntry(userId, entryId, {foodId, quantity});
+    updateEntry(userId, entryId, {foodId, quantity});
+    res.status(200).json({message: `Updated sucessfully`});
 
-    res.status(200).json({ entry: entry });
   } catch (error) {
     res.status(500).json({error: `Failed to update entry.`})
     console.error(error);
