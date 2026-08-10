@@ -30,7 +30,7 @@ model User {
 
 model Food {
   id        Int   @id @default(autoincrement())
-  name      String?
+  name      String
   protein   Float
   carb      Float
   fat       Float

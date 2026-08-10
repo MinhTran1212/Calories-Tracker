@@ -1,6 +1,5 @@
 import { Request, Response } from 'express';
 import { createFood, totalMacro, deleteFood, getAllFood, getOneFood, updateFood} from '../services/food.services';
-
 import { AuthRequest } from '../middleware/authMiddleware';
  
 export const createFoodEntry = async (req: AuthRequest, res: Response): Promise<void> => {
@@ -67,8 +66,8 @@ export const deleteFoodEntry =  async (req: AuthRequest, res: Response): Promise
         return;
       } 
 
-      if (!foodId){
-        res.status(401).json({error: `No food exist with this id.`});
+      if (!foodId || isNaN(foodId)){
+        res.status(400).json({error: `No food exist with this id.`});
         return;
       }
 
@@ -78,7 +77,7 @@ export const deleteFoodEntry =  async (req: AuthRequest, res: Response): Promise
       }
 
       const delFood = await deleteFood(foodId, userId);
-      res.status(200).json(delFood);
+      res.status(200).json({ message: "Food deleted.", food: delFood });
     } catch (error){
        res.status(500).json({error: `Failed to delete food.`});
        console.error(error);
@@ -135,7 +134,7 @@ export const updateFoodEntry = async (req: AuthRequest, res: Response): Promise<
       } 
 
       if (!id){
-        res.status(401).json({error: `No food exist with this id.`});
+        res.status(400).json({error: `No food exist with this id.`});
         return;
       }
 

@@ -11,7 +11,7 @@ export interface CreateFoodInput {
   userId: number;   // or number, depending on your schema
 }
 
-export interface Food {
+export interface UpdateFood {
   foodName: string;
   protein: number;  // per 100g
   carb: number;     // per 100g
@@ -124,16 +124,32 @@ export async function getOneFood(id: number){
     return food;
 }
 
-export async function updateFood(data: Food, userId: number, id: number){
-    if (!userId){
-        throw new Error(`This user does not exist.`);
-    }
-
+export async function updateFood(data: UpdateFood, userId: number, id: number){
     if (!id){
         throw new Error(`The food with this id does not exist.`);
     }
 
-    return await prisma.food.updateMany({
+    if (!userId){
+        throw new Error(`This user does not exist.`);
+    }
+
+    const food = await prisma.food.findUnique({
+        where: {
+            id: id,
+        }
+    });
+
+    if (!food){
+        throw new Error("Food not found");
+    }
+
+    if (food.userId != userId){
+        throw new Error("Forbidden");
+    }
+
+
+
+    return await prisma.food.update({
         where: {
             id:  id,
             userId: userId
