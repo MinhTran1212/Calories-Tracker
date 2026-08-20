@@ -57,27 +57,31 @@ export async function logIn(email: string, password: string){
     });
 
     if (!user){
-        throw new Error(`Invalid email or password.`);
+        return null;
     }
 
     const isMatch = await bcrypt.compare(password, user.password);
 
     if (!isMatch){
-        throw new Error(`Invalid email or password`);
+        return null;
     }
 
     return user;
 }
 
 export async function getProfile(userId: number){
-    const user = prisma.user.findUnique({
+    if (!userId) {
+        return null;
+    }
+
+    const user = await prisma.user.findUnique({
         where: {
             id: userId
         }
     });
 
     if (!user){
-        throw new Error(`This user does not exist`);
+        return null;
     }
 
     return user;
@@ -85,7 +89,7 @@ export async function getProfile(userId: number){
 
 export async function updateProfile(userId: number, data: UpdateProfile) {
   if (!userId) {
-    throw new Error("User does not exist.");
+    return null;
   }
 
   const user = await prisma.user.findUnique({
@@ -93,7 +97,7 @@ export async function updateProfile(userId: number, data: UpdateProfile) {
   });
 
   if (!user) {
-    throw new Error("No user found.");
+    return null;
   }
 
   const updatedUser = await prisma.user.update({

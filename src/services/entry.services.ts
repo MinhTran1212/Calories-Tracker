@@ -8,15 +8,15 @@ interface UpdateEntry {
 
 export async function createEntry(userId: number, foodId: number, quantity: number){
     if (!userId){
-        throw new Error(`The user with this id does not exist`);
+        return null;
     }
 
     if (!foodId){
-        throw new Error(`The food with this id does not exist`);
+        return null;
     }
 
     if (!quantity){
-        throw new Error(`Need quantity.`)
+        return null;
     }
 
     return await prisma.entry.create({
@@ -43,11 +43,11 @@ export function scaleNutrition(food: { name: string ; grams: number; protein: nu
 
 export async function getEntryWithNutrtion(userId: number, entryId: number){
     if (!userId){
-        throw new Error(`User does not exist.`);
+        return null;
     }
 
     if (!entryId){
-        throw new Error(`Entry does not exist`);
+        return null;
     }
 
     const entry = await prisma.entry.findFirst({
@@ -59,11 +59,11 @@ export async function getEntryWithNutrtion(userId: number, entryId: number){
     });
 
     if (!entry){
-        throw new Error(`Entry does not exist.`)
+        return null;
     }
 
     if (userId !== entry?.userId){
-        throw new Error(`Forbidden`);
+        return null;
     }
 
     const multiplier = entry?.quantity;
@@ -74,7 +74,7 @@ export async function getEntryWithNutrtion(userId: number, entryId: number){
 
 export async function getEntriesForDay(userId: number, targetDate: Date = new Date()){
     if (!userId){
-        throw new Error(`User does not exist.`);
+        return null;
     }
 
     const startOfDay = new Date(targetDate);
@@ -97,7 +97,7 @@ export async function getEntriesForDay(userId: number, targetDate: Date = new Da
 
 export async function getDailyTotals(userId: number, targetDate: Date = new Date()) {
   if (!userId) {
-    throw new Error("This user does not exist.");
+    return null;
   }
 
   const startOfDay = new Date(targetDate);
@@ -135,7 +135,7 @@ export async function getDailyTotals(userId: number, targetDate: Date = new Date
 
 export async function getEntriesBreakdownForDay(userId: number, targetDate: Date = new Date()){
     if (!userId){
-        throw new Error(`User does not exist.`);
+        return null;
     }
 
     const startOfDay = new Date(targetDate);
@@ -159,11 +159,11 @@ export async function getEntriesBreakdownForDay(userId: number, targetDate: Date
 
 export async function updateEntry(userId: number, id: number, data: UpdateEntry){
     if (!userId){
-        throw new Error(`This user does not exist.`);
+        return null;
     }
 
     if (!id){
-        throw new Error(`The user with this id does not exist.`);
+        return null;
     }
 
     const entry = await prisma.entry.findUnique({
@@ -171,16 +171,17 @@ export async function updateEntry(userId: number, id: number, data: UpdateEntry)
     });
 
     if (!entry){
-        throw new Error(`Cannot find user with this id`);
+        return null;
     }
 
-    if (userId !== entry.userId){
-        throw new Error(`Forbidden`);
+    if (entry.userId !== userId){
+        return null;
     }
 
     return await prisma.entry.update({
         where: {
-            id: id
+            id: id,
+            userId: userId
         },
         data
     });
@@ -188,11 +189,11 @@ export async function updateEntry(userId: number, id: number, data: UpdateEntry)
 
 export async function deleteEntry(userId: number, id: number){
     if (!userId){
-        throw new Error(`This user does not exist.`);
+        return null;
     }
 
     if (!id){
-        throw new Error(`The user with this id does not exist.`);
+        return null;
     }
 
     const entry = await prisma.entry.findUnique({
@@ -200,16 +201,17 @@ export async function deleteEntry(userId: number, id: number){
     });
 
     if (!entry){
-        throw new Error(`Cannot find user with this id`);
+        return null;
     }
 
-    if (userId !== entry.userId){
-        throw new Error(`Forbidden`);
+    if (entry.userId !== userId){
+        return null;
     }
 
     return await prisma.entry.delete({
         where: {
-            id: id
+            id: id,
+            userId: userId
         }
     });
 }

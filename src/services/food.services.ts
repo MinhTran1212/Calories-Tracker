@@ -48,7 +48,7 @@ export async function totalMacro(userId: number, targetDate: Date = new Date()){
     endOfDay.setHours(23,59,59,999);
 
     if (!userId){
-        throw new Error(`This user does not exist.`);
+        return null;
     }
 
     return await prisma.food.aggregate({
@@ -80,11 +80,11 @@ export async function deleteFood(foodId: number, userId: number){
     });
 
     if (!food){
-        throw new Error("Food not found");
+        return null;
     }
 
     if (food.userId != userId){
-        throw new Error("Forbidden");
+        return null;
     }
 
     return await prisma.food.delete({
@@ -108,7 +108,7 @@ export async function getOneFood(id: number){
 
 
     if (!id){
-        throw new Error(`The food with this id does not exist.`);
+        return null;
     }
 
     const food = await prisma.food.findFirst({
@@ -122,11 +122,11 @@ export async function getOneFood(id: number){
 
 export async function updateFood(data: UpdateFood, userId: number, id: number){
     if (!id){
-        throw new Error(`The food with this id does not exist.`);
+        return null;
     }
 
     if (!userId){
-        throw new Error(`This user does not exist.`);
+        return null;
     }
 
     const food = await prisma.food.findUnique({
@@ -136,11 +136,11 @@ export async function updateFood(data: UpdateFood, userId: number, id: number){
     });
 
     if (!food){
-        throw new Error("Food not found");
+        return null;
     }
 
     if (food.userId != userId){
-        throw new Error("Forbidden");
+        return null;
     }
 
 

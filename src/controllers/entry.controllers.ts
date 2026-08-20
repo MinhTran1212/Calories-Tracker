@@ -39,11 +39,17 @@ export const getEntryWithNutrtion2 = async (req: AuthRequest, res: Response): Pr
       return;
     }
 
-    if (!entryId){
-      res.status(400).json({ error: "need params"});
+    if (isNaN(entryId) || entryId <= 0) {
+      res.status(400).json({ error: "Valid entry ID parameter is required." });
+      return;
     }
 
     const entry = await getEntryWithNutrtion(userId, entryId);
+
+    if (!entry) {
+      res.status(404).json({ error: "Entry not found." });
+      return;
+    }
 
     res.status(200).send(entry);
   } catch (error){
@@ -56,7 +62,7 @@ export const getEntriesForDay2 = async (req: AuthRequest, res: Response): Promis
   try {
     const userId = req.userId;
      if (!userId){
-      res.status(402).json({error: `Unauthorized.`});
+      res.status(401).json({error: `Unauthorized.`});
       return;
      }
      
@@ -145,7 +151,13 @@ export const updateEntry2 = async (req: AuthRequest, res: Response): Promise<voi
       return;
     }
 
-    await updateEntry(userId, entryId, {foodId, quantity});
+    const updated = await updateEntry(userId, entryId, {foodId, quantity});
+
+    if (!updated) {
+      res.status(404).json({ error: "Entry not found." });
+      return;
+    }
+
     res.status(200).json({message: `Updated sucessfully`});
 
   } catch (error) {
@@ -170,8 +182,13 @@ export const deleteEntry2 = async (req: AuthRequest, res: Response): Promise<voi
       return;
     }
 
-          
     const delEntry = await deleteEntry(userId, entryId);
+
+    if (!delEntry) {
+      res.status(404).json({ error: "Entry not found." });
+      return;
+    }
+
     res.status(200).json({ message: "Food deleted.", food: delEntry });
 
   } catch (error) {

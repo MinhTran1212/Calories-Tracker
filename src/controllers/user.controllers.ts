@@ -58,6 +58,12 @@ export const logInEntry = async(req: AuthRequest, res: Response): Promise<void> 
     }
 
     const user = await logIn(email, password);
+
+    if (!user) {
+      res.status(401).json({ error: "Invalid email or password." });
+      return;
+    }
+
     const token = jwt.sign(
       {userId: user.id},
       process.env.JWT_SECRET!,
