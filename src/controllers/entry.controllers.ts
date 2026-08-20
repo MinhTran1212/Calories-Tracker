@@ -21,7 +21,7 @@ export const createEntry2 = async (req: AuthRequest, res: Response): Promise<voi
 
     const entry = await createEntry(userId, foodId, quantity);
 
-    res.status(201).json({ entry });
+    res.status(200).json({ entry });
 
   } catch (error) {
     res.status(500).json({ error: "Failed to create entry." });
