@@ -132,7 +132,8 @@ function renderMeals() {
     list.innerHTML = '<div class="empty-state"><strong>Your log is waiting for its first entry.</strong><span>Use “Log a meal” to add something from your food library.</span></div>';
     return;
   }
-  list.innerHTML = state.entries.map((entry) => `<article class="meal-item"><div class="meal-icon">✦</div><div class="meal-main"><strong>${escapeHtml(entry.name)}</strong><small>${entry.totalGrams || 0}g serving</small></div><div class="meal-macro"><b>CAL</b>${money(entry.calories)}</div><div class="meal-macro"><b>PRO</b>${money(entry.protein)}g</div><div class="meal-macro"><b>CARB</b>${money(entry.carb)}g</div><div class="meal-macro"><b>FAT</b>${money(entry.fat)}g</div><button class="delete-button" data-delete-entry="${entry.id}" title="Delete meal">×</button></article>`).join('');
+  list.innerHTML = state.entries.map((entry) => `<article class="meal-item"><div class="meal-icon">✦</div><div class="meal-main"><strong>${escapeHtml(entry.name)}</strong><small>${entry.totalGrams || 0}g serving</small></div><div class="meal-macro"><b>CAL</b>${money(entry.calories)}</div><div class="meal-macro"><b>PRO</b>${money(entry.protein)}g</div><div class="meal-macro"><b>CARB</b>${money(entry.carb)}g</div><div class="meal-macro"><b>FAT</b>${money(entry.fat)}g</div><button class="edit-button" data-edit-entry="${entry.id}" title="Edit meal" aria-label="Edit ${escapeHtml(entry.name)}">Edit</button><button class="delete-button" data-delete-entry="${entry.id}" title="Delete meal">×</button></article>`).join('');
+  $$('[data-edit-entry]').forEach((button) => button.addEventListener('click', () => openEditEntry(button.dataset.editEntry)));
   $$('[data-delete-entry]').forEach((button) => button.addEventListener('click', () => deleteEntry(button.dataset.deleteEntry)));
 }
 
@@ -181,6 +182,21 @@ function resetMealDialog() {
   $('#meal-form').reset();
   state.selectedMealFood = null;
   $('#meal-food-results').innerHTML = '<p class="form-hint">Start typing to search your food library.</p>';
+}
+function openEditEntry(id) {
+  const entry = state.entries.find((item) => Number(item.id) === Number(id));
+  if (!entry) return;
+  const foodSelect = $('#edit-entry-food');
+  foodSelect.innerHTML = state.foods.map((food) => `<option value="${food.id}">${escapeHtml(food.name)} · ${money(food.grams)}g serving</option>`).join('');
+  $('#edit-entry-form').entryId.value = entry.id;
+  $('#edit-entry-form').quantity.value = entry.quantity || 1;
+  foodSelect.value = String(entry.foodId);
+  $('#edit-entry-dialog').showModal();
+}
+function setupEntryEditStyles() {
+  const style = document.createElement('style');
+  style.textContent = '.meal-item{grid-template-columns:38px 1fr repeat(4,70px) 42px 25px}.edit-button{border:1px solid var(--line);border-radius:5px;background:transparent;padding:6px 7px;color:var(--green);font-size:10px;font-weight:800}.edit-button:hover{border-color:var(--green);background:#e8f0e7}@media(max-width:560px){.meal-item{grid-template-columns:35px 1fr 58px 42px 25px;gap:8px}}';
+  document.head.appendChild(style);
 }
 $$('.dialog-close').forEach((button) => button.addEventListener('click', (event) => {
   event.preventDefault();
@@ -232,8 +248,19 @@ $('#food-search').addEventListener('input', (event) => renderFoods(event.target.
 $('#log-meal-button').addEventListener('click', () => { resetMealDialog(); $('#meal-dialog').showModal(); });
 $('#meal-food-search').addEventListener('input', (event) => { window.clearTimeout(mealSearchTimer); mealSearchTimer = window.setTimeout(() => searchMealFoods(event.target.value), 250); });
 $('#cancel-meal-button').addEventListener('click', () => { resetMealDialog(); $('#meal-dialog').close(); });
+$('#cancel-edit-entry-button').addEventListener('click', () => $('#edit-entry-dialog').close());
 $('#food-form').addEventListener('submit', async (event) => { event.preventDefault(); const values = formValues(event.target); try { await api('/food/create', { method: 'POST', body: JSON.stringify({ name: values.name, protein: Number(values.protein), carb: Number(values.carb), fat: Number(values.fat), fiber: Number(values.fiber), quantity: Number(values.quantity) }) }); event.target.reset(); $('#food-dialog').close(); await refreshDashboard(); showToast('Food saved to your library.'); } catch (error) { showToast(error.message); } });
 $('#meal-form').addEventListener('submit', async (event) => { event.preventDefault(); const values = formValues(event.target); if (!values.foodId) { showToast('Choose a food before adding the meal.'); return; } try { await api('/entry/create', { method: 'POST', body: JSON.stringify({ foodId: Number(values.foodId), quantity: Number(values.quantity) }) }); resetMealDialog(); $('#meal-dialog').close(); await refreshDashboard(); showToast('Meal added to your day.'); } catch (error) { showToast(error.message); } });
+$('#edit-entry-form').addEventListener('submit', async (event) => {
+  event.preventDefault();
+  const values = formValues(event.target);
+  try {
+    await api(`/entry/update/${values.entryId}`, { method: 'PATCH', body: JSON.stringify({ foodId: Number(values.foodId), quantity: Number(values.quantity) }) });
+    $('#edit-entry-dialog').close();
+    await refreshDashboard();
+    showToast('Meal updated.');
+  } catch (error) { showToast(error.message); }
+});
 $('#profile-form').addEventListener('submit', async (event) => {
   event.preventDefault();
   const values = formValues(event.target);
@@ -256,4 +283,5 @@ $('#profile-form').addEventListener('submit', async (event) => {
   }
 });
 setupIntensityButtons();
+setupEntryEditStyles();
 if (state.token) startApp();

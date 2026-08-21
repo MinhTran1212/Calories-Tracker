@@ -18,14 +18,15 @@ export const createUserEntry = async(req: Request, res: Response): Promise<void>
   try {
     const { name, email, password, weight, height, gender, age, workoutIntensity } = req.body;
     if ( !name || !email || !gender || (gender !== Gender.MALE && gender !== Gender.FEMALE)){
-      res.status(200).json({error: `name, email must exist and gender must be MALE or FEMALE.`});
+      res.status(400).json({error: `name, email must exist and gender must be MALE or FEMALE.`});
       return;
     } else if (typeof weight !== 'number' || weight < 30 || weight > 200 ||
       typeof height !== 'number' || height < 80 || height > 250 ||
       typeof age !== 'number' || age <= 0 || age > 100 ||
       typeof workoutIntensity !== 'number' || workoutIntensity < 1.2 || workoutIntensity > 1.9
     ){
-      res.status(200).json({error: `Invalid or missing parameters. Personal information must be valid numbers.`});
+      res.status(400).json({error: `Invalid or missing parameters. Personal information must be valid numbers.`});
+      return;
     }
 
     if (!isValidEmail(email)) {
@@ -88,9 +89,15 @@ export const getProfileInfo = async (req: AuthRequest, res: Response): Promise<v
 
     if (!userId){
       res.status(401).json({error: `Unauthorized`});
+      return;
     }
 
     const user = await getProfile(userId);
+
+    if (!user) {
+      res.status(404).json({ error: "User not found." });
+      return;
+    }
 
     res.status(200).json(user);
   } catch (error){
@@ -148,11 +155,15 @@ export const updateProfile2 = async (req: AuthRequest, res: Response): Promise<v
 
     if (!userId){
       res.status(401).json({error: `Unauthorized`});
+      return;
     }
 
     const update = await updateProfile(userId, { name, email, password, weight, height, gender, age, workoutIntensity });
-    const profile = await getProfile(userId)
-    
+
+    if (!update) {
+      res.status(404).json({ error: "User not found." });
+      return;
+    }
 
     res.status(200).json(update);
 

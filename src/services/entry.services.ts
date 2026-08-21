@@ -28,9 +28,11 @@ export async function createEntry(userId: number, foodId: number, quantity: numb
     })
 }
 
-export function scaleNutrition(food: { name: string ; grams: number; protein: number; carb: number; fat: number; fiber: number; calories: number }, entryId: number, multiplier: number) {
+export function scaleNutrition(food: { id: number; name: string ; grams: number; protein: number; carb: number; fat: number; fiber: number; calories: number }, entryId: number, multiplier: number) {
   return {
     id: entryId,
+    foodId: food.id,
+    quantity: multiplier,
     name: food.name,
     totalGrams: Math.round(food.grams * multiplier),
     protein: Math.round(food.protein * multiplier),
@@ -92,7 +94,7 @@ export async function getEntriesForDay(userId: number, targetDate: Date = new Da
         }
     })
 
-     return entries;
+    return entries;
 }
 
 export async function getDailyTotals(userId: number, targetDate: Date = new Date()) {

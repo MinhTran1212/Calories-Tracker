@@ -19,7 +19,7 @@ describe('testing POST /entry/create', () => {
         userId = authRes.body.user.id;
     });
 
-    it('/POST should return json and 200', async () => {
+    it('should return json and 200', async () => {
         const res = await request(app)
             .post('/entry/create')
             .set('Authorization', `Bearer ${token}`)
@@ -40,7 +40,7 @@ describe('testing POST /entry/create', () => {
         });
     });
 
-    it('/POST should return 401', async () => {
+    it('should return 401', async () => {
         const res = await request(app)
             .post('/entry/create')
             .send({
@@ -50,7 +50,7 @@ describe('testing POST /entry/create', () => {
         expect(res.status).toBe(401);
     });
 
-    it('/POST should return 400', async () => {
+    it('should return 400', async () => {
         const res = await request(app)
             .post('/entry/create')
             .set('Authorization', `Bearer ${token}`)
@@ -61,7 +61,7 @@ describe('testing POST /entry/create', () => {
         expect(res.status).toBe(400);
     });
 
-    it('/POST should return 500 and error body', async () => {
+    it('should return 500 and error body', async () => {
         vi.spyOn(prisma.entry, 'create').mockRejectedValueOnce(
             new Error('Database connection failed')
         );
@@ -107,7 +107,7 @@ describe('testing GET /entry/getnutrition/:id', () => {
         
     });
 
-    it('/GET should return 200 and json', async () => {
+    it('should return 200 and json', async () => {
         const res = await request(app)
             .get('/entry/getnutrition/10')
             .set('Authorization', `Bearer ${token}`);
@@ -125,13 +125,13 @@ describe('testing GET /entry/getnutrition/:id', () => {
         });
     });
 
-    it('/GET should return 401', async () => {
+    it('should return 401', async () => {
         const res = await request(app)
             .get(`/entry/getnutrition/${entryId}`)
         expect(res.status).toBe(401);
     });
 
-    it('/GET should return 404', async () => {
+    it('should return 404', async () => {
         const res = await request(app)
             .get(`/entry/getnutrition/9999`)
             .set('Authorization', `Bearer ${token}`)
@@ -139,8 +139,8 @@ describe('testing GET /entry/getnutrition/:id', () => {
     });
 
 
-    it('/GET should return 500 and error body', async () => {
-        vi.spyOn(prisma.entry, 'findUnique').mockRejectedValueOnce(
+    it('should return 500 and error body', async () => {
+        vi.spyOn(prisma.entry, 'findFirst').mockRejectedValueOnce(
             new Error('Database connection failed')
         );
 
@@ -151,6 +151,147 @@ describe('testing GET /entry/getnutrition/:id', () => {
         expect(res.status).toBe(500);
         expect(res.body).toHaveProperty('error');
     });
+});
 
+describe('testing PATCH /entry/update/:id', () => {
+    let userId: number;
+    let token: string;
+    let entryId: number;
 
+    beforeAll( async () => {
+        const authRes = await request(app)
+            .post('/user/login')
+            .send({
+                email: "tranluongnhatminh2007@gmail.com",
+                password: "MinhTran1212"
+            })
+        
+        token = authRes.body.token;
+        userId = authRes.body.user.id;
+
+        const entryRes = await request(app)
+            .post('/entry/create')
+            .set('Authorization', `Bearer ${token}`)
+            .send({
+                foodId: 12, 
+                quantity: 2
+            })
+        entryId = entryRes.body.entry.id;
+    });
+
+    it('should return 200', async() => {
+        const update = await request(app)
+            .patch(`/entry/update/${entryId}`)
+            .set('Authorization', `Bearer ${token}`)
+            .send({
+                quantity: 4
+            })
+
+        expect(update.status).toBe(200);
+        expect(update.body).toMatchObject({
+            message: expect.any(String)
+        });
+    });
+
+    it('should return 401 for no token', async() => {
+        const update = await request(app)
+            .patch(`/entry/update/${entryId}`)
+            .send({
+                quantity: 4
+            })
+
+        expect(update.status).toBe(401);
+    });
+
+    it('should return 400 for bad input', async() => {
+        const update = await request(app)
+            .patch(`/entry/update/${entryId}`)
+            .set('Authorization', `Bearer ${token}`)
+            .send({
+                quantity: "abc"
+            })
+
+        expect(update.status).toBe(400);
+    });
+
+    it('should return 500 and error body', async () => {
+        vi.spyOn(prisma.entry, 'update').mockRejectedValueOnce(
+            new Error('Database connection failed')
+        );
+
+        const res = await request(app)
+            .patch(`/entry/update/${entryId}`)
+            .set('Authorization', `Bearer ${token}`)
+            .send({
+                quantity: 4
+            })
+
+        expect(res.status).toBe(500);
+        expect(res.body).toHaveProperty('error');
+    });
+});
+
+describe('testing DELETE /entry/:id', () => {
+    let userId: number;
+    let token: string;
+    let entryId: number;
+
+    beforeAll( async () => {
+        const authRes = await request(app)
+            .post('/user/login')
+            .send({
+                email: "tranluongnhatminh2007@gmail.com",
+                password: "MinhTran1212"
+            })
+        
+        token = authRes.body.token;
+        userId = authRes.body.user.id;
+
+        const entryRes = await request(app)
+            .post('/entry/create')
+            .set('Authorization', `Bearer ${token}`)
+            .send({
+                foodId: 12, 
+                quantity: 2
+            })
+        entryId = entryRes.body.entry.id;
+    });
+
+    it('should return 200 and json', async () => {
+        const res = await request(app)
+            .delete(`/entry/${entryId}`)
+            .set('Authorization', `Bearer ${token}`)
+            
+
+        expect(res.status).toBe(200);
+        expect(res.body).toMatchObject({
+            message: expect.any(String),
+            food: {
+                id: expect.any(Number),
+                userId: expect.any(Number),
+                foodId: expect.any(Number),
+                quantity: expect.any(Number),
+            }
+        });
+    });
+
+    it('should return 401', async () => {
+        const res = await request(app)
+            .delete(`/entry/${entryId}`)
+        expect(res.status).toBe(401);
+    });
+
+    it('should return 400', async () => {
+        const res = await request(app)
+            .delete(`/entry/abc`)
+            .set('Authorization', `Bearer ${token}`)
+        expect(res.status).toBe(400);
+    });
+
+    it('should return 404 for not found entry id', async () => {
+        const res = await request(app)
+            .delete(`/entry/10000000`)
+            .set('Authorization', `Bearer ${token}`)
+        expect(res.status).toBe(404);
+    });
 });

@@ -13,4 +13,4 @@ describe('Base application set up', () => {
         const res = await request(app).get('/this-route-does-not-exist');
         expect(res.status).toBe(404);
     })
-})
+});

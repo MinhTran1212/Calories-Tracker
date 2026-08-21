@@ -66,7 +66,8 @@ export const getEntriesForDay2 = async (req: AuthRequest, res: Response): Promis
       return;
      }
      
-     const entries  = await getEntriesForDay(userId);
+    const entries  = await getEntriesForDay(userId);
+
      res.status(200).json(entries);
     
   } catch (error) {
@@ -146,8 +147,8 @@ export const updateEntry2 = async (req: AuthRequest, res: Response): Promise<voi
 
     const { foodId, quantity } = req.body;
 
-    if (!quantity || typeof quantity !== 'number' || !foodId || typeof foodId !== 'number') {
-      res.status(400).json({ error: "Quantity and food's ID must be a valid number." });
+    if (!quantity || typeof quantity !== 'number') {
+      res.status(400).json({ error: "Quantity must be a valid number." });
       return;
     }
 
