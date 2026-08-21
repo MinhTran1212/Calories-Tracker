@@ -6,13 +6,32 @@ import prisma from '../lib/prisma';
 describe('testing POST /entry/create', () => {
     let token: string;
     let userId: number;
+    let email: string;
+    let password = 'Password123!';
 
     beforeAll(async() => {
+        const validPayload = {
+        name: 'Minh Tran',
+        email: `test_${Date.now()}@example.com`,
+        password: 'Password123!',
+        weight: 75,
+        height: 175,
+        gender: 'MALE',
+        age: 22,
+        workoutIntensity: 1.5,
+        };
+
+        const res = await request(app)
+            .post('/user/register')
+            .send(validPayload);
+        
+        email = res.body.log.email;
+        
         const authRes = await request(app)
             .post('/user/login')
             .send({
-                email: 'roberttran1207@gmail.com',
-                password: 'MinhTran1212'
+                email: email,
+                password: password
             });
 
         token = authRes.body.token;
@@ -83,15 +102,35 @@ describe('testing GET /entry/getnutrition/:id', () => {
     let token: string;
     let userId: number;
     let entryId: number;
+    let email: string;
+    let password = 'Password123!';
 
 
     beforeAll(async () => {
+        const validPayload = {
+        name: 'Minh Tran',
+        email: `test_${Date.now()}@example.com`,
+        password: 'Password123!',
+        weight: 75,
+        height: 175,
+        gender: 'MALE',
+        age: 22,
+        workoutIntensity: 1.5,
+        };
+
+        const res = await request(app)
+            .post('/user/register')
+            .send(validPayload);
+        
+        email = res.body.log.email;
+
         const authRes = await request(app)
             .post('/user/login')
             .send({
-                email: 'roberttran1207@gmail.com',
-                password: 'MinhTran1212'
+                email: email,
+                password: password
             })
+
 
         token = authRes.body.token;
         userId = authRes.body.user.id;
@@ -109,7 +148,7 @@ describe('testing GET /entry/getnutrition/:id', () => {
 
     it('should return 200 and json', async () => {
         const res = await request(app)
-            .get('/entry/getnutrition/10')
+            .get(`/entry/getnutrition/${entryId}`)
             .set('Authorization', `Bearer ${token}`);
 
         expect(res.status).toBe(200);
@@ -157,13 +196,31 @@ describe('testing PATCH /entry/update/:id', () => {
     let userId: number;
     let token: string;
     let entryId: number;
+    let email: string;
+    let password = 'Password123!'
 
     beforeAll( async () => {
+        const validPayload = {
+        name: 'Minh Tran',
+        email: `test_${Date.now()}@example.com`,
+        password: 'Password123!',
+        weight: 75,
+        height: 175,
+        gender: 'MALE',
+        age: 22,
+        workoutIntensity: 1.5,
+        };
+
+        const res = await request(app)
+            .post('/user/register')
+            .send(validPayload);
+        
+        email = res.body.log.email;
         const authRes = await request(app)
             .post('/user/login')
             .send({
-                email: "tranluongnhatminh2007@gmail.com",
-                password: "MinhTran1212"
+                email: email,
+                password: password
             })
         
         token = authRes.body.token;
@@ -235,13 +292,31 @@ describe('testing DELETE /entry/:id', () => {
     let userId: number;
     let token: string;
     let entryId: number;
+    let email: string;
+    let password = 'Password123!';
 
     beforeAll( async () => {
+        const validPayload = {
+        name: 'Minh Tran',
+        email: `test_${Date.now()}@example.com`,
+        password: 'Password123!',
+        weight: 75,
+        height: 175,
+        gender: 'MALE',
+        age: 22,
+        workoutIntensity: 1.5,
+        };
+
+        const res = await request(app)
+            .post('/user/register')
+            .send(validPayload);
+        
+        email = res.body.log.email;
         const authRes = await request(app)
             .post('/user/login')
             .send({
-                email: "tranluongnhatminh2007@gmail.com",
-                password: "MinhTran1212"
+                email: email,
+                password: password
             })
         
         token = authRes.body.token;
