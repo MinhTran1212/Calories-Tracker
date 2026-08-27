@@ -14,5 +14,6 @@ app.use('/food', foodRouter);
 app.use('/entry', entryRouter);
 
 app.get('/', (req, res) => {
+  console.log("GET /");
   res.sendFile(path.join(__dirname, '../public/index.html'));
 });
