@@ -2,12 +2,14 @@ import { describe, it, expect, beforeAll, vi } from 'vitest';
 import request from 'supertest';
 import { app } from "../index";
 import prisma from '../lib/prisma';
+import test from 'node:test';
 
 describe('testing POST /entry/create', () => {
     let token: string;
     let userId: number;
     let email: string;
     let password = 'Password123!';
+    let testFoodId: number;
 
     beforeAll(async() => {
         const validPayload = {
@@ -36,6 +38,20 @@ describe('testing POST /entry/create', () => {
 
         token = authRes.body.token;
         userId = authRes.body.user.id;
+
+            const foodRes = await request(app)
+                .post('/food/create')
+                .set('Authorization', `Bearer ${token}`)
+                .send({
+                  name: 'Chicken Breast',
+                  protein: 31,
+                  carb: 0,
+                  fat: 3.6,
+                  fiber: 0,
+                  quantity: 100,
+                });
+        
+        testFoodId = foodRes.body.id;
     });
 
     it('should return json and 200', async () => {
@@ -43,7 +59,7 @@ describe('testing POST /entry/create', () => {
             .post('/entry/create')
             .set('Authorization', `Bearer ${token}`)
             .send({
-                foodId: 14,
+                foodId: testFoodId,
                 quantity: 3
             })
         
@@ -104,6 +120,7 @@ describe('testing GET /entry/getnutrition/:id', () => {
     let entryId: number;
     let email: string;
     let password = 'Password123!';
+    let testFoodId: number;
 
 
     beforeAll(async () => {
@@ -134,15 +151,30 @@ describe('testing GET /entry/getnutrition/:id', () => {
 
         token = authRes.body.token;
         userId = authRes.body.user.id;
+        const foodRes = await request(app)
+            .post('/food/create')
+            .set('Authorization', `Bearer ${token}`)
+            .send({
+              name: 'Chicken Breast',
+              protein: 31,
+              carb: 0,
+              fat: 3.6,
+              fiber: 0,
+              quantity: 100,
+            });
+        
+        testFoodId = foodRes.body.id;
 
         const entryRes = await request(app)
         .post('/entry/create')
         .set('Authorization', `Bearer ${token}`)
         .send({
-          foodId: 14,
+          foodId: testFoodId,
           quantity: 2,
         });
         entryId = entryRes.body.entry.id;
+
+
         
     });
 
@@ -197,7 +229,8 @@ describe('testing PATCH /entry/update/:id', () => {
     let token: string;
     let entryId: number;
     let email: string;
-    let password = 'Password123!'
+    let password = 'Password123!';
+    let testFoodId: number;
 
     beforeAll( async () => {
         const validPayload = {
@@ -226,11 +259,25 @@ describe('testing PATCH /entry/update/:id', () => {
         token = authRes.body.token;
         userId = authRes.body.user.id;
 
+        const foodRes = await request(app)
+            .post('/food/create')
+            .set('Authorization', `Bearer ${token}`)
+            .send({
+              name: 'Chicken Breast',
+              protein: 31,
+              carb: 0,
+              fat: 3.6,
+              fiber: 0,
+              quantity: 100,
+            });
+        
+        testFoodId = foodRes.body.id;
+
         const entryRes = await request(app)
             .post('/entry/create')
             .set('Authorization', `Bearer ${token}`)
             .send({
-                foodId: 12, 
+                foodId: testFoodId, 
                 quantity: 2
             })
         entryId = entryRes.body.entry.id;
@@ -294,6 +341,7 @@ describe('testing DELETE /entry/:id', () => {
     let entryId: number;
     let email: string;
     let password = 'Password123!';
+    let testFoodId: number;
 
     beforeAll( async () => {
         const validPayload = {
@@ -322,11 +370,25 @@ describe('testing DELETE /entry/:id', () => {
         token = authRes.body.token;
         userId = authRes.body.user.id;
 
+        const foodRes = await request(app)
+            .post('/food/create')
+            .set('Authorization', `Bearer ${token}`)
+            .send({
+              name: 'Chicken Breast',
+              protein: 31,
+              carb: 0,
+              fat: 3.6,
+              fiber: 0,
+              quantity: 100,
+            });
+        
+        testFoodId = foodRes.body.id;
+
         const entryRes = await request(app)
             .post('/entry/create')
             .set('Authorization', `Bearer ${token}`)
             .send({
-                foodId: 12, 
+                foodId: testFoodId, 
                 quantity: 2
             })
         entryId = entryRes.body.entry.id;

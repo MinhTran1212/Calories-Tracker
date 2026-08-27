@@ -1,4 +1,4 @@
-import { PrismaClient, Gender } from "../generated/prisma";
+import { PrismaClient } from "../generated/prisma";
 import { PrismaPg } from "@prisma/adapter-pg";
 require('dotenv').config(); // MUST be at the top!
 

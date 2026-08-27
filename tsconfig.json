@@ -5,7 +5,9 @@
     "rootDir": "src",
     "outDir": "dist",
     "strict": true,
-    "esModuleInterop": true},
+    "esModuleInterop": true,
+    "skipLibCheck": true //require for testing
+  },
   "include": ["src/**/*.ts"],
   "exclude": ["node_modules"]
 }
